@@ -1,0 +1,109 @@
+version: "3.1"
+services:
+    rabbitmq:
+      build: sourcefiles/rabbitmq
+      container_name: rabbitmq
+      ports:
+        - "${RABBITMQ_NODE_HOST_PORT}:5672"
+        - "${RABBITMQ_MANAGEMENT_HTTP_HOST_PORT}:15672"
+        - "${RABBITMQ_MANAGEMENT_HTTPS_HOST_PORT}:15671"
+      privileged: true
+      environment:
+        - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+        - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      volumes:
+        - ${DATA_PATH_HOST}/rabbitmq:/var/lib/rabbitmq
+      networks:
+          testing_net:
+              ipv4_address: 172.28.1.1
+
+    redis:
+      image: redis:alpine
+      container_name: redis
+    postgres:
+      image: postgres:9.6
+      container_name: ${PROJECT_NAME}-postgres
+      volumes:
+         - "./sourcefiles/postgres:/var/lib/postgresql/data"
+      environment:
+        - POSTGRES_USER=${POSTGRES_USER}
+        - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+        - POSTGRES_DB=${POSTGRES_DB}
+      ports:
+       - "5432:5432"
+      networks:
+            testing_net:
+                ipv4_address: 172.28.1.2
+ 
+    webserver:
+      image: nginx:alpine
+      container_name: webserver
+      working_dir: /application
+      volumes:
+          - ./application:/application
+          - ./sourcefiles/nginx:/etc/nginx/conf.d
+      ports:
+       - "80:80"
+      networks:
+            testing_net:
+                ipv4_address: 172.28.1.3
+
+    php-fpm7.0:
+      build: sourcefiles/php-fpm7.0
+      container_name: php-fpm7.0
+      working_dir: /application
+      volumes:
+        - ./application:/application
+        - ./sourcefiles/php-fpm/php-ini-overrides.ini:/etc/php/7.0/fpm/conf.d/99-overrides.ini
+      networks:
+          testing_net:
+              ipv4_address: 172.28.1.4
+       
+    php-fpm7.1:
+      build: sourcefiles/php-fpm7.1
+      container_name: php-fpm7.1
+      working_dir: /application
+      volumes:
+        - ./application:/application
+        - ./sourcefiles/php-fpm/php-ini-overrides.ini:/etc/php/7.1/fpm/conf.d/99-overrides.ini
+      networks:
+          testing_net:
+              ipv4_address: 172.28.1.5
+    
+    php-fpm7.2:
+      build: sourcefiles/php-fpm7.2
+      container_name: php-fpm7.2
+      working_dir: /application
+      volumes:
+        - ./application:/application
+        - ./sourcefiles/php-fpm/php-ini-overrides.ini:/etc/php/7.2/fpm/conf.d/99-overrides.ini
+      networks:
+          testing_net:
+              ipv4_address: 172.28.1.6   
+    
+    php-fpm7.3:
+      build: sourcefiles/php-fpm7.3
+      container_name: php-fpm7.3
+      working_dir: /application
+      volumes:
+        - ./application:/application
+        - ./sourcefiles/php-fpm/php-ini-overrides.ini:/etc/php/7.3/fpm/conf.d/99-overrides.ini
+      networks:
+          testing_net:
+              ipv4_address: 172.28.1.7
+    php-fpm7.4:
+      build: sourcefiles/php-fpm7.4
+      container_name: php-fpm7.4
+      working_dir: /application
+      volumes:
+        - ./application:/application
+        - ./sourcefiles/php-fpm/php-ini-overrides.ini:/etc/php/7.4/fpm/conf.d/99-overrides.ini
+      networks:
+          testing_net:
+              ipv4_address: 172.28.1.8
+networks:
+    testing_net:
+        ipam:
+            driver: default
+            config:
+                - subnet: 172.28.0.0/16
